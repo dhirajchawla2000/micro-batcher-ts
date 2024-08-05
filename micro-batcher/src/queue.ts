@@ -13,7 +13,7 @@ export class Queue<J> {
     return this.queue.splice(0, batchSize)
   }
 
-  get length() {
+  getLength() {
     return this.queue.length
   }
 }

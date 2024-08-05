@@ -46,9 +46,9 @@ export class MicroBatch<Job, JobResult> {
 
   public async shutdown() {
     console.log('Shutdown signal received')
-    if (this.jobQueue.length > 0) {
-      const batchedJobs = this.generateBatch(this.jobQueue.length)
-      console.log('Processing jobs', batchedJobs.length, ',', 'Remaining job count', this.jobQueue.length)
+    if (this.jobQueue.getLength() > 0) {
+      const batchedJobs = this.generateBatch(this.jobQueue.getLength())
+      console.log('Processing jobs', batchedJobs.length, ',', 'Remaining job count', this.jobQueue.getLength())
       await this.process(batchedJobs)
     }
     clearInterval(this.interval)
@@ -62,7 +62,7 @@ export class MicroBatch<Job, JobResult> {
   private start() {
     this.interval = setInterval(async () => {
       const batchedJobs = this.generateBatch(this.batchSize)
-      console.log('Processing jobs', batchedJobs.length, ',', 'Remaining job count', this.jobQueue.length)
+      console.log('Processing jobs', batchedJobs.length, ',', 'Remaining job count', this.jobQueue.getLength())
       await this.process(batchedJobs)
     }, this.frequency)
   }
