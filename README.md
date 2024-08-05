@@ -24,6 +24,10 @@ Run the test
 npm run test
 ```
 
+## API docs
+
+The API docs are available [here](docs/globals.md)
+
 ## Run the examples
 
 **Square the numbers batch**

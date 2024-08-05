@@ -1,3 +1,8 @@
+/**
+ * Batch processor definition
+ * @typeParam Job type of job to handle
+ * @typeParam JobResult type of job result returned
+ */
 export abstract class BatchProcessor<Job, JobResult> {
   abstract process(job: Job): Promise<JobResult>
 }

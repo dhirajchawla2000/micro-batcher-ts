@@ -5,6 +5,12 @@ import { BatchExecutionResult, BatchProcessor, MicroBatcherOptions } from './typ
 export const MAX_RETRY_ATTEMPTS = 3
 export const BATCH_RUN_FREQUENCY = 100
 
+/**
+ * Micro batch class that handles micro batching
+ * 
+ * @typeParam Job type of job to handle
+ * @typeParam JobResult type of job result returned
+ */
 export class MicroBatch<Job, JobResult> {
   private batchSize: number
   private processor: BatchProcessor<Job, JobResult>
@@ -16,6 +22,11 @@ export class MicroBatch<Job, JobResult> {
   private batchShutdownEvent: EventEmitter
   private interval!: NodeJS.Timeout
 
+  /**
+   * 
+   * @param processor batch processor to process a given job
+   * @param options micro batch options
+   */
   constructor(processor: BatchProcessor<Job, JobResult>, options: MicroBatcherOptions) {
     const { batchSize, frequency, maxRetryAttempts } = options
     this.batchSize = batchSize
@@ -31,19 +42,35 @@ export class MicroBatch<Job, JobResult> {
     this.start()
   }
 
+  /**
+   * Invokes the result and error callbacks after each job run
+   * @param result result callback
+   * @param error error callback
+   */
   public onResult(result: (r: JobResult) => void, error: (e: string) => void) {
     this.jobResultEvent.on('result', result)
     this.jobResultEvent.on('error', error)
   }
 
+  /**
+   * Invokes the shutdown callback when micro batch shutdown is triggered
+   * @param callback shutdown callback
+   */
   public onShutdown(callback: () => void) {
     this.batchShutdownEvent.on('shutdown', callback)
   }
 
+  /**
+   * Adds a job for execution
+   * @param job job to execute
+   */
   public submit(job: Job) {
     this.jobQueue.enqueue(job)
   }
 
+  /**
+   * Trigger a micro batch shutdown
+   */
   public async shutdown() {
     console.log('Shutdown signal received')
     if (this.jobQueue.getLength() > 0) {
@@ -55,10 +82,18 @@ export class MicroBatch<Job, JobResult> {
     this.batchShutdownEvent.emit('shutdown')
   }
 
+  /**
+   * Dequeues jobs for execution
+   * @param batchSize job count to return
+   * @returns jobs
+   */
   private generateBatch(batchSize: number) {
     return this.jobQueue.dequeue(batchSize)
   }
 
+  /**
+   * Starts the micro batch
+   */
   private start() {
     this.interval = setInterval(async () => {
       const batchedJobs = this.generateBatch(this.batchSize)
@@ -67,6 +102,10 @@ export class MicroBatch<Job, JobResult> {
     }, this.frequency)
   }
 
+  /**
+   * Processes a set of jobs
+   * @param jobs jobs to process
+   */
   private async process(jobs: Job[]) {
     console.log('Processing jobs', jobs)
     await Promise.all(
@@ -84,6 +123,11 @@ export class MicroBatch<Job, JobResult> {
     )
   }
 
+  /**
+   * Processes a job with retry
+   * @param job job to process
+   * @returns returns job result or error
+   */
   private async processWithRetry(job: Job): Promise<BatchExecutionResult<JobResult>> {
     let attempts = 0
     const errorMessages: string[] = []
